@@ -1,0 +1,94 @@
+﻿@page "/{Key}"
+@using DevResume.ServiceLayer.Services
+@using DevResume.Domain.Entities
+
+@inject IResumeService ResumeService
+@inject IJSRuntime JSRuntime;
+
+<ResumeNav Key="@Key" SectionsActive="@SectionsActive" />
+
+<div id="fullpage">
+    @if (resume.Id != 0)
+    {
+        if (SectionsActive[0].Item1)
+        {
+            <div class="section">
+                <div class="main_info">
+                    <p class="main_info-h1">
+                        @resume.Title
+                    </p>
+                    <p class="main_info-h2">
+                        @resume.Subtitle
+                    </p>
+                </div>
+                <p class="made_with">
+                    made with
+                    <a href="#" class="link">
+                        DevResume
+                    </a>
+                </p>
+            </div>
+        }
+        if (SectionsActive[1].Item1)
+        {
+            <div class="section">
+                <MainInfoSection Resume="resume" />
+            </div>
+        }
+        if (SectionsActive[2].Item1)
+        {
+            <div class="section">
+                <ProjectsSection ResumeId="resume.Id" />
+            </div>
+        }
+        if (SectionsActive[3].Item1)
+        {
+            <div class="section">
+                <SkillsSection ResumeId="resume.Id" />
+            </div>
+        }
+        if (SectionsActive[4].Item1)
+        {
+            <div class="section">
+                <ExperienceSection ResumeId="resume.Id" />
+            </div>
+        }
+        if (SectionsActive[5].Item1)
+        {
+            <div class="section">
+                <EducationsSection ResumeId="resume.Id" />
+            </div>
+        }
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public string Key { get; set; }
+    public (bool, int)[] SectionsActive { get; set; } = new (bool, int)[6];
+
+    private Resume resume = new Resume();
+
+    protected override async Task OnInitializedAsync()
+    {
+        resume = await ResumeService.GetResume(Key);
+        SectionsActive = resume.Sections.OrderBy(x => (int)x.Type).Select(x => (x.IsActive, 0)).ToArray();
+        for (var i = 0; i < SectionsActive.Count(); i++)
+        {
+            if (SectionsActive[i].Item1)
+            {
+                SectionsActive[i].Item2 = SectionsActive.Take(i + 1).Count(x => x.Item1);
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !SectionsActive[2].Item1)
+        {
+            await JSRuntime.InvokeAsync<string>("start");
+        }
+    }
+
+}

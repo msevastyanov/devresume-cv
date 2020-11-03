@@ -1,0 +1,27 @@
+@layout MainLayout
+@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+
+<AuthorizeView>
+    <Authorized>
+        <div class="admin">
+            <div class="container-fluid">
+                @Body
+            </div>
+        </div>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    [CascadingParameter] protected Task<AuthenticationState> AuthStat { get; set; }
+
+    protected async override Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+        var user = (await AuthStat).User;
+        if (!user.Identity.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo($"/login");
+        }
+    }
+}

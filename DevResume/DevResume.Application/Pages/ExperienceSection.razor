@@ -1,0 +1,59 @@
+﻿@using DevResume.ServiceLayer.Services
+@using DevResume.Domain.Entities
+
+@inject IExperienceService ExperienceService
+
+<div class="container-fluid">
+    <div class="experience-wrapper">
+        <div class="row">
+            @foreach (var experience in experienceList)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card experience_card">
+                        @if (!String.IsNullOrEmpty(experience.Website) && !String.IsNullOrEmpty(experience.Logo))
+                        {
+                            <a href="@experience.Website" target="_blank">
+                                <img src="@($"uploads/{experience.Logo}")" alt="logo" class="experience_card-logo" />
+                            </a>
+                        }
+                        else if (!String.IsNullOrEmpty(experience.Logo))
+                        {
+                            <img src="@($"uploads/{experience.Logo}")" alt="logo" class="experience_card-logo" />
+                        }
+                        <p class="experience_card-company">
+                            @experience.Company
+                        </p>
+                        <p class="experience_card-period">
+                            @experience.YearFrom – @experience.AdaptYearTo
+                        </p>
+                        <p class="experience_card-position">
+                            @experience.Position
+                        </p>
+                        <p class="experience_card-area">
+                            @experience.Area
+                        </p>
+                        <p class="experience_card-technologies">
+                            @experience.Technologies
+                        </p>
+                        <p class="experience_card-languages">
+                            @experience.Languages
+                        </p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public int ResumeId { get; set; }
+
+    private List<Experience> experienceList = new List<Experience>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        experienceList = await ExperienceService.GetAllExperience(ResumeId);
+    }
+}

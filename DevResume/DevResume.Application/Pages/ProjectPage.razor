@@ -1,0 +1,88 @@
+﻿@using DevResume.Domain.Entities
+
+<div class="project_slide">
+    <div class="project_slide-cover_wrapper">
+        <img src="@($"uploads/{project.Cover}")" alt="cover" class="project-cover" />
+        <div class="project_slide-cover_gradient"></div>
+    </div>
+    <span class="project_slide-year">
+        @project.Year
+    </span>
+    <div class="project_slide-info">
+        <h1 class="project_slide-title">
+            @project.Title
+        </h1>
+        <h2 class="project_slide-subtitle">
+            @project.Subtitle
+        </h2>
+        <div class="project_slide-icons">
+            @if (project.IsWebApp)
+            {
+                <i class="fas fa-globe" title="Web"></i>
+            }
+            @if (project.IsMobileApp)
+            {
+                <i class="fas fa-mobile-alt" title="Mobile"></i>
+            }
+            @if (project.IsDesktopApp)
+            {
+                <i class="fas fa-desktop" title="Desktop"></i>
+            }
+            @if (project.IsLibrary)
+            {
+                <i class="fas fa-code" title="Library"></i>
+            }
+        </div>
+        @if (!String.IsNullOrEmpty(project.Description))
+        {
+            <p class="project_slide-description-1">
+                @project.Description
+            </p>
+        }
+        @if (!String.IsNullOrEmpty(project.Technologies))
+        {
+            <p class="project_slide-description-2">
+                @project.Technologies
+            </p>
+        }
+        @if (!String.IsNullOrEmpty(project.Languages))
+        {
+            <p class="project_slide-description-2">
+                @project.Languages
+            </p>
+        }
+        <div class="project_slide-links">
+            @if (!String.IsNullOrEmpty(project.Website))
+            {
+                <a href="@project.Website" target="_blank" title="Website" class="tile_link">
+                    <i class="fas fa-globe"></i>
+                </a>
+            }
+            @if (!String.IsNullOrEmpty(project.Source))
+            {
+                <a href="@project.Source" target="_blank" title="Source" class="tile_link">
+                    <i class="fab fa-github"></i>
+                </a>
+            }
+            @if (!String.IsNullOrEmpty(project.PlayStore))
+            {
+                <a href="@project.PlayStore" target="_blank" title="Google Play" class="tile_link">
+                    <i class="fab fa-android"></i>
+                </a>
+            }
+            @if (!String.IsNullOrEmpty(project.AppStore))
+            {
+                <a href="@project.AppStore" target="_blank" title="App Store" class="tile_link">
+                    <i class="fab fa-apple"></i>
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public Project project { get; set; }
+
+}

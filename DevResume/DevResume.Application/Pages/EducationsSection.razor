@@ -1,0 +1,44 @@
+﻿@using DevResume.ServiceLayer.Services
+@using DevResume.Domain.Entities
+
+@inject IEducationService EducationService
+
+<div class="container-fluid">
+    <div class="education-wrapper">
+        <div class="row">
+            @foreach (var education in educations)
+            {
+                <div class="col-md-4">
+                    <div class="card education_card">
+                        <p class="education_card-degree">
+                            @education.Degree
+                        </p>
+                        <p class="education_card-period">
+                            @education.YearFrom – @education.AdaptYearTo
+                        </p>
+                        <p class="education_card-university">
+                            @education.University
+                        </p>
+                        <p class="education_card-program">
+                            @education.Program
+                        </p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public int ResumeId { get; set; }
+
+    private List<Education> educations = new List<Education>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        educations = await EducationService.GetEducations(ResumeId);
+    }
+
+}

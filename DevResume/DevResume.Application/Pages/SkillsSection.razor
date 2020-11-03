@@ -1,0 +1,49 @@
+﻿@using DevResume.ServiceLayer.Services
+@using DevResume.Domain.Entities
+
+@inject ISkillService SkillsService
+
+<div class="container-fluid">
+    <div class="skills-wrapper">
+        @foreach (var skill in skills)
+        {
+            <div class="card skill_card">
+                <p class="skill_card-name">
+                    @skill.Name
+                </p>
+                @{
+                    var type = skill.Type switch
+                    {
+                        SkillType.Language => "Language",
+                        SkillType.Framework => "Framework",
+                        SkillType.DBMS => "DBMS",
+                        SkillType.IDE => "IDE",
+                        _ => "",
+                    };
+                }
+                <p class="skill_card-type">
+                    @type
+                </p>
+                <div class="skill_card-level">
+                    @for (var i = 0; i <= (int)skill.Level; i++)
+                    {
+                        <span class="@($"skill_card-level-indicator level-{(int)skill.Level+1}")"></span>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public int ResumeId { get; set; }
+
+    private List<Skill> skills = new List<Skill>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        skills = await SkillsService.GetSkills(ResumeId);
+    }
+}

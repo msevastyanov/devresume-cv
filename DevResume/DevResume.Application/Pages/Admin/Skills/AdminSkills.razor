@@ -1,0 +1,90 @@
+﻿@layout AdminLayout
+@page "/admin/resumes/{ResumeId:int}/skills"
+@using Microsoft.AspNetCore.Http
+@using DevResume.ServiceLayer.Services
+@using DevResume.ServiceLayer.Services.Interfaces
+@using DevResume.Domain.Entities
+
+@inject IHttpContextAccessor HttpContextAccessor
+@inject ISkillService SkillService
+@inject IResumeService ResumeService
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+<AdminResumeMenu ResumeId="@ResumeId" />
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <h1 class="card-title">
+                @resume.Key: Skills
+            </h1>
+            <div class="card-actions">
+                <NavLink href="@($"/admin/resumes/{ResumeId}/skills/0")" class="btn btn-primary">
+                    Add
+                </NavLink>
+            </div>
+            @if (!skills.Any())
+            {
+                <div class="card-warning">
+                    No skills yet
+                </div>
+            }
+            <table class="table table-striped">
+                <tbody>
+                    @foreach (var skill in skills)
+                    {
+                        <tr>
+                            <td>
+                                @skill.Name
+                            </td>
+                            <td>
+                                @skill.Type
+                            </td>
+                            <td class="table-actions">
+                                <NavLink href="@($"/admin/resumes/{ResumeId}/skills/{skill.Id}")" class="btn btn-secondary">
+                                    Edit
+                                </NavLink>
+                                <button @onclick="@(e => DeleteSkill(e, skill.Id))" class="btn btn-secondary">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public int ResumeId { get; set; }
+
+    private List<Skill> skills = new List<Skill>();
+
+    private Resume resume = new Resume();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userName = HttpContextAccessor.HttpContext.User.Identity.Name;
+        if (!await AuthService.AuthorizeResume(userName, ResumeId))
+            NavigationManager.NavigateTo("/admin/notfound");
+
+        skills = await SkillService.GetSkills(ResumeId);
+        resume = await ResumeService.GetResume(ResumeId);
+    }
+
+    private async Task DeleteSkill(MouseEventArgs e, int skillId)
+    {
+        var userName = HttpContextAccessor.HttpContext.User.Identity.Name;
+        if (!await AuthService.AuthorizeSkill(userName, skillId))
+            NavigationManager.NavigateTo("/admin/notfound");
+
+        await SkillService.DeleteSkill(skillId);
+
+        skills = skills.Where(x => x.Id != skillId).ToList();
+    }
+
+}

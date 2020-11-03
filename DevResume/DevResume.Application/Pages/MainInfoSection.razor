@@ -1,0 +1,128 @@
+﻿@using DevResume.Domain.Entities
+
+<div class="container-fluid">
+    <div class="main_info-wrapper">
+        <div class="row">
+            <div class="col-xl-6 col-lg-8">
+                <div class="card">
+                    <p class="main_info-name">
+                        @Resume.FirstName @Resume.LastName
+                    </p>
+                    <p class="main_info-city_country">
+                        @Resume.City, @Resume.Country
+                    </p>
+                    <div class="main_info-block">
+                        <label class="main_info-label">
+                            Birthday
+                        </label>
+                        <p class="main_info-value">
+                            @Resume.Birthday.ToString("dd.MM.yyyy")
+                        </p>
+                    </div>
+                    @if (!String.IsNullOrEmpty(Resume.Languages))
+                    {
+                        <div class="main_info-block">
+                            <label class="main_info-label">
+                                Languages
+                            </label>
+                            <p class="main_info-value">
+                                @Resume.Languages
+                            </p>
+                        </div>
+                    }
+                    @if (!String.IsNullOrEmpty(Resume.Email))
+                    {
+                        <div class="main_info-block">
+                            <label class="main_info-label">
+                                Email
+                            </label>
+                            <p class="main_info-value">
+                                @Resume.Email
+                            </p>
+                        </div>
+                    }
+                    @if (!String.IsNullOrEmpty(Resume.Phone))
+                    {
+                        <div class="main_info-block">
+                            <label class="main_info-label">
+                                Phone
+                            </label>
+                            <p class="main_info-value">
+                                @Resume.Phone
+                            </p>
+                        </div>
+                    }
+                    @{
+                        var method = Resume.CommunicationMethod switch
+                        {
+                            CommunicationMethod.Phone => "Phone",
+                            CommunicationMethod.Email => "Email",
+                            CommunicationMethod.Messengers => "Messengers",
+                            _ => "",
+                        };
+                    }
+                    <div class="main_info-block">
+                        <label class="main_info-label">
+                            Preferred communication method: @method
+                        </label>
+                    </div>
+                    <div class="main_info-links">
+                        @if (!String.IsNullOrEmpty(Resume.VK))
+                        {
+                            <a href="@Resume.VK" target="_blank" title="VK" class="tile_link">
+                                <i class="fab fa-vk"></i>
+                            </a>
+                        }
+                        @if (!String.IsNullOrEmpty(Resume.Facebook))
+                        {
+                            <a href="@Resume.Facebook" target="_blank" title="Facebook" class="tile_link">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                        }
+                        @if (!String.IsNullOrEmpty(Resume.Twitter))
+                        {
+                            <a href="@Resume.Twitter" target="_blank" title="Twitter" class="tile_link">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                        }
+                        @if (!String.IsNullOrEmpty(Resume.Instagram))
+                        {
+                            <a href="@Resume.Instagram" target="_blank" title="Instagram" class="tile_link">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        }
+                        @if (!String.IsNullOrEmpty(Resume.Github))
+                        {
+                            <a href="@Resume.Github" target="_blank" title="Github" class="tile_link">
+                                <i class="fab fa-github"></i>
+                            </a>
+                        }
+                        @if (!String.IsNullOrEmpty(Resume.Gitlab))
+                        {
+                            <a href="@Resume.Gitlab" target="_blank" title="Gitlab" class="tile_link">
+                                <i class="fab fa-gitlab"></i>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-6 col-lg-4 about_me">
+                <div class="card">
+                    <p class="card-title">
+                        About me
+                    </p>
+                    <p class="main_info-about">
+                        @Resume.About
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public Resume Resume { get; set; }
+
+}

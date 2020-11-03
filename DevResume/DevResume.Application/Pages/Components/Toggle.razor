@@ -1,0 +1,13 @@
+﻿<div @onclick="OnClickCallback" class="toggler">
+    <span class="@($"toggler-flag flag-{Value}")"></span>
+</div>
+
+@code {
+
+    [Parameter]
+    public bool Value { get; set; }
+
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClickCallback { get; set; }
+
+}

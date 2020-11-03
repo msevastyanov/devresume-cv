@@ -1,0 +1,80 @@
+﻿@layout AdminLayout
+@page "/admin/resumes/{ResumeId:int}/sections"
+@using Microsoft.AspNetCore.Http
+@using DevResume.ServiceLayer.Services
+@using DevResume.ServiceLayer.Services.Interfaces
+@using DevResume.Domain.Entities
+@using DevResume.Application.Pages.Components
+
+@inject IHttpContextAccessor HttpContextAccessor
+@inject ISectionService SectionService
+@inject IResumeService ResumeService
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+<AdminResumeMenu ResumeId="@ResumeId" />
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <h1 class="card-title">
+                @resume.Key: Sections
+            </h1>
+            <table class="table table-striped">
+                <tbody>
+                    @foreach (var sectionItem in sections)
+                    {
+                        <tr>
+                            @{
+                                var sectionName = sectionItem.Type switch
+                                {
+                                    SectionType.Main => "Main",
+                                    SectionType.Info => "Info",
+                                    SectionType.Projects => "Projects",
+                                    SectionType.Skills => "Skills",
+                                    SectionType.Experience => "Experience",
+                                    SectionType.Education => "Education",
+                                    _ => "",
+                                };
+                            }
+                            <td>
+                                @sectionName
+                            </td>
+                            <td class="table-actions">
+                                <Toggle Value="sectionItem.IsActive" OnClickCallback="@(e => ToggleSectionActive(sectionItem))" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public int ResumeId { get; set; }
+
+    private List<Section> sections = new List<Section>();
+
+    private Resume resume = new Resume();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userName = HttpContextAccessor.HttpContext.User.Identity.Name;
+        if (!await AuthService.AuthorizeResume(userName, ResumeId))
+            NavigationManager.NavigateTo("/admin/notfound");
+
+        sections = await SectionService.GetSections(ResumeId);
+        resume = await ResumeService.GetResume(ResumeId);
+    }
+
+    private async Task ToggleSectionActive(Section section)
+    {
+        section.IsActive = !section.IsActive;
+
+        await SectionService.UpdateSection(section);
+    }
+
+}

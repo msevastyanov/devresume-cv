@@ -1,0 +1,31 @@
+﻿@using DevResume.Domain.Entities
+@using Microsoft.AspNetCore.Identity
+
+@inject SignInManager<ApplicationUser> signInManager
+
+<AuthorizeView>
+    <Authorized>
+        <ul class="nav-menu right">
+            <li class="active">
+                <NavLink href="/admin" class="nav-menu-link">
+                    My resumes
+                </NavLink>
+            </li>
+            <li class="active">
+                <form method="post" action="Identity/Account/LogOut">
+                    <button type="submit" class="nav-menu-link">Log out</button>
+                </form>
+            </li>
+        </ul>
+    </Authorized>
+    <NotAuthorized>
+        <ul class="nav-menu right">
+            <li class="active">
+                <a href="Identity/Account/Register" class="nav-menu-link">Register</a>
+            </li>
+            <li class="active">
+                <a href="Identity/Account/Login" class="nav-menu-link">Log in</a>
+            </li>
+        </ul>
+    </NotAuthorized>
+</AuthorizeView>

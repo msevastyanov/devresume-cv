@@ -1,0 +1,35 @@
+﻿@layout AdminLayout
+@page "/admin/resumes/{Id:int}"
+@using Microsoft.AspNetCore.Http
+@using DevResume.ServiceLayer.Services
+@using DevResume.ServiceLayer.Services.Interfaces
+@using DevResume.Domain.Entities
+
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IResumeService ResumeService
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+<AdminResumeMenu ResumeId="@resume.Id" />
+
+<h3>
+    @resume.Key
+</h3>
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private Resume resume = new Resume();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userName = HttpContextAccessor.HttpContext.User.Identity.Name;
+        if (Id != 0 && !await AuthService.AuthorizeResume(userName, Id))
+            NavigationManager.NavigateTo("/admin/notfound");
+
+        resume = Id == 0 ? new Resume() : await ResumeService.GetResume(Id);
+    }
+
+}

@@ -1,0 +1,190 @@
+﻿@layout AdminLayout
+@page "/admin/resumes/{ResumeId:int}/experience/{Id:int}"
+@using Microsoft.AspNetCore.Http
+@using DevResume.ServiceLayer.Services
+@using DevResume.ServiceLayer.Services.Interfaces
+@using DevResume.Domain.Entities
+@using DevResume.Domain.Models
+
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IExperienceService ExperienceService
+@inject IFileService FileService
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+<AdminResumeMenu ResumeId="@ResumeId" />
+
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            @if (Id == 0)
+            {
+                <h1 class="card-title">
+                    New education
+                </h1>
+            }
+            else
+            {
+                <h1 class="card-title">
+                    @experience.Company (@experience.YearFrom - @experience.AdaptYearTo)
+                </h1>
+            }
+            <div class="card-actions">
+                <button type="submit" form="experienceForm" class="btn btn-primary">
+                    Save
+                </button>
+                <NavLink href="@($"/admin/resumes/{ResumeId}/experience")" class="btn btn-secondary">
+                    Back
+                </NavLink>
+            </div>
+            <div class="card-content">
+                <EditForm id="experienceForm" Model="@experience" OnValidSubmit="HandleSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="form-group">
+                        <label>
+                            Company:
+                        </label>
+                        <InputText id="company" @bind-Value="experience.Company" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Website:
+                        </label>
+                        <InputText id="company" @bind-Value="experience.Website" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Position:
+                        </label>
+                        <InputText id="position" @bind-Value="experience.Position" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Area:
+                        </label>
+                        <InputText id="area" @bind-Value="experience.Area" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Technologies:
+                        </label>
+                        <InputText id="technologies" @bind-Value="experience.Technologies" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Languages:
+                        </label>
+                        <InputText id="languages" @bind-Value="experience.Languages" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            From:
+                        </label>
+                        <InputNumber id="yearFrom" @bind-Value="experience.YearFrom" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Not finished:
+                        </label>
+                        <InputCheckbox id="isFinished" @bind-Value="experience.NotFinished" class="form-control form-checkbox" />
+                    </div>
+                    @if (!experience.NotFinished)
+                    {
+                        <div class="form-group">
+                            <label>
+                                To:
+                            </label>
+                            <InputNumber id="yearTo" @bind-Value="experience.YearTo" class="form-control" />
+                        </div>
+                    }
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="drag-drop-zone">
+                                <InputFile OnChange="HandleFileSelected" />
+                                Upload logo here
+                            </div>
+                        </div>
+                        <div class="col-md-3 offset-md-3">
+                            @if (experience?.Logo?.Length > 0)
+                            {
+                                <div class="form_image-wrapper">
+                                    <a @onclick="@(e => RemoveLogo())" class="form_image-btn">
+                                        Remove
+                                    </a>
+                                    <img src="@($"uploads/{experience.Logo}")" alt="logo" class="form_image experience_form_image" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public int ResumeId { get; set; }
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private Experience experience = new Experience();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userName = HttpContextAccessor.HttpContext.User.Identity.Name;
+        if (!await AuthService.AuthorizeResume(userName, ResumeId))
+            NavigationManager.NavigateTo("/admin/notfound");
+
+        experience = Id == 0 ? new Experience() : await ExperienceService.GetExperience(Id);
+
+        if (Id != 0 && experience.YearTo == 0)
+        {
+            experience.NotFinished = true;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (Id == 0)
+        {
+            var userName = HttpContextAccessor.HttpContext.User.Identity.Name;
+            if (!await AuthService.AuthorizeResume(userName, ResumeId))
+                NavigationManager.NavigateTo("/admin/notfound");
+
+            await ExperienceService.AddExperience(experience, ResumeId);
+        }
+        else
+        {
+            var userName = HttpContextAccessor.HttpContext.User.Identity.Name;
+            if (!await AuthService.AuthorizeExperience(userName, experience.Id))
+                NavigationManager.NavigateTo("/admin/notfound");
+
+            await ExperienceService.UpdateExperience(experience);
+        }
+
+        NavigationManager.NavigateTo($"/admin/resumes/{ResumeId}/experience");
+    }
+
+    async void HandleFileSelected(IFileListEntry[] files)
+    {
+        var filesPaths = await FileService.UploadFiles(files.Select(x => new FileDataModel
+        {
+            Name = x.Name,
+            Data = x.Data
+        }).ToList());
+
+        experience.Logo = filesPaths.FirstOrDefault();
+        this.StateHasChanged();
+    }
+
+    void RemoveLogo()
+    {
+        experience.Logo = null;
+    }
+
+}

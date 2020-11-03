@@ -1,0 +1,142 @@
+﻿@layout AdminLayout
+@page "/admin/resumes/{ResumeId:int}/skills/{Id:int}"
+@using Microsoft.AspNetCore.Http
+@using DevResume.ServiceLayer.Services
+@using DevResume.ServiceLayer.Services.Interfaces
+@using DevResume.Domain.Entities
+@using DevResume.Domain.Models
+
+@inject IHttpContextAccessor HttpContextAccessor
+@inject ISkillService SkillService
+@inject IFileService FileService
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+<AdminResumeMenu ResumeId="@ResumeId" />
+
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            @if (Id == 0)
+            {
+                <h1 class="card-title">
+                    New skill
+                </h1>
+            }
+            else
+            {
+                <h1 class="card-title">
+                    @skill.Name
+                </h1>
+            }
+            <div class="card-actions">
+                <button type="submit" form="skillForm" class="btn btn-primary">
+                    Save
+                </button>
+                <NavLink href="@($"/admin/resumes/{ResumeId}/skills")" class="btn btn-secondary">
+                    Back
+                </NavLink>
+            </div>
+            <div class="card-content">
+                <EditForm id="skillForm" Model="@skill" OnValidSubmit="HandleSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="form-group">
+                        <label>
+                            Name:
+                        </label>
+                        <InputText id="name" @bind-Value="skill.Name" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Experience:
+                        </label>
+                        <InputSelect @bind-Value="skill.Level" class="form-control">
+                            <option value="@ExperienceLevel.High">
+                                High level
+                            </option>
+                            <option value="@ExperienceLevel.Middle">
+                                Middle level
+                            </option>
+                            <option value="@ExperienceLevel.Low">
+                                Low level
+                            </option>
+                        </InputSelect>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Type:
+                        </label>
+                        <InputSelect @bind-Value="skill.Type" class="form-control">
+                            <option value="@SkillType.Language">
+                                Language
+                            </option>
+                            <option value="@SkillType.Framework">
+                                Framework
+                            </option>
+                            <option value="@SkillType.DBMS">
+                                DBMS
+                            </option>
+                            <option value="@SkillType.IDE">
+                                IDE
+                            </option>
+                            <option value="@SkillType.Other">
+                                Other
+                            </option>
+                        </InputSelect>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Comment:
+                        </label>
+                        <InputTextArea id="comment" @bind-Value="skill.Comment" class="form-control" />
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public int ResumeId { get; set; }
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private Skill skill = new Skill();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userName = HttpContextAccessor.HttpContext.User.Identity.Name;
+        if (!await AuthService.AuthorizeResume(userName, ResumeId))
+            NavigationManager.NavigateTo("/admin/notfound");
+
+        skill = Id == 0 ? new Skill() : await SkillService.GetSkill(Id);
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (Id == 0)
+        {
+            var userName = HttpContextAccessor.HttpContext.User.Identity.Name;
+            if (!await AuthService.AuthorizeResume(userName, ResumeId))
+                NavigationManager.NavigateTo("/admin/notfound");
+
+            await SkillService.AddSkill(skill, ResumeId);
+        }
+        else
+        {
+            var userName = HttpContextAccessor.HttpContext.User.Identity.Name;
+            if (!await AuthService.AuthorizeSkill(userName, skill.Id))
+                NavigationManager.NavigateTo("/admin/notfound");
+
+            await SkillService.UpdateSkill(skill);
+        }
+
+        NavigationManager.NavigateTo($"/admin/resumes/{ResumeId}/skills");
+    }
+
+}

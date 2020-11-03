@@ -1,0 +1,90 @@
+﻿@layout AdminLayout
+@page "/admin/resumes/{ResumeId:int}/experience"
+@using Microsoft.AspNetCore.Http
+@using DevResume.ServiceLayer.Services
+@using DevResume.ServiceLayer.Services.Interfaces
+@using DevResume.Domain.Entities
+
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IExperienceService ExperienceService
+@inject IResumeService ResumeService
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+<AdminResumeMenu ResumeId="@ResumeId" />
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <h1 class="card-title">
+                @resume.Key: Experience
+            </h1>
+            <div class="card-actions">
+                <NavLink href="@($"/admin/resumes/{ResumeId}/experience/0")" class="btn btn-primary">
+                    Add
+                </NavLink>
+            </div>
+            @if (!experienceList.Any())
+            {
+                <div class="card-warning">
+                    No experience yet
+                </div>
+            }
+            <table class="table table-striped">
+                <tbody>
+                    @foreach (var experience in experienceList)
+                    {
+                        <tr>
+                            <td>
+                                @experience.Company
+                            </td>
+                            <td>
+                                @experience.YearFrom - @experience.AdaptYearTo
+                            </td>
+                            <td class="table-actions">
+                                <NavLink href="@($"/admin/resumes/{ResumeId}/experience/{experience.Id}")" class="btn btn-secondary">
+                                    Edit
+                                </NavLink>
+                                <button @onclick="@(e => DeleteExperience(e, experience.Id))" class="btn btn-secondary">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public int ResumeId { get; set; }
+
+    private List<Experience> experienceList = new List<Experience>();
+
+    private Resume resume = new Resume();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userName = HttpContextAccessor.HttpContext.User.Identity.Name;
+        if (!await AuthService.AuthorizeResume(userName, ResumeId))
+            NavigationManager.NavigateTo("/admin/notfound");
+
+        experienceList = await ExperienceService.GetAllExperience(ResumeId);
+        resume = await ResumeService.GetResume(ResumeId);
+    }
+
+    private async Task DeleteExperience(MouseEventArgs e, int expId)
+    {
+        var userName = HttpContextAccessor.HttpContext.User.Identity.Name;
+        if (!await AuthService.AuthorizeExperience(userName, expId))
+            NavigationManager.NavigateTo("/admin/notfound");
+
+        await ExperienceService.DeleteExperience(expId);
+
+        experienceList = experienceList.Where(x => x.Id != expId).ToList();
+    }
+
+}

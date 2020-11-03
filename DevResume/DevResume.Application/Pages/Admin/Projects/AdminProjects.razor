@@ -1,0 +1,87 @@
+﻿@layout AdminLayout
+@page "/admin/resumes/{ResumeId:int}/projects"
+@using Microsoft.AspNetCore.Http
+@using DevResume.ServiceLayer.Services
+@using DevResume.ServiceLayer.Services.Interfaces
+@using DevResume.Domain.Entities
+
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IProjectService ProjectService
+@inject IResumeService ResumeService
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+<AdminResumeMenu ResumeId="@ResumeId" />
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <h1 class="card-title">
+                @resume.Key: Projects
+            </h1>
+            <div class="card-actions">
+                <NavLink href="@($"/admin/resumes/{ResumeId}/projects/0")" class="btn btn-primary">
+                    Add
+                </NavLink>
+            </div>
+            @if (!projects.Any())
+            {
+                <div class="card-warning">
+                    No projects yet
+                </div>
+            }
+            <table class="table table-striped">
+                <tbody>
+                    @foreach (var project in projects)
+                    {
+                        <tr>
+                            <td>
+                                @project.Title
+                            </td>
+                            <td class="table-actions">
+                                <NavLink href="@($"/admin/resumes/{ResumeId}/projects/{project.Id}")" class="btn btn-secondary">
+                                    Edit
+                                </NavLink>
+                                <button @onclick="@(e => DeleteProject(e, project.Id))" class="btn btn-secondary">
+                                    Delete
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public int ResumeId { get; set; }
+
+    private List<Project> projects = new List<Project>();
+
+    private Resume resume = new Resume();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userName = HttpContextAccessor.HttpContext.User.Identity.Name;
+        if (!await AuthService.AuthorizeResume(userName, ResumeId))
+            NavigationManager.NavigateTo("/admin/notfound");
+
+        projects = await ProjectService.GetProjects(ResumeId);
+        resume = await ResumeService.GetResume(ResumeId);
+    }
+
+    private async Task DeleteProject(MouseEventArgs e, int projectId)
+    {
+        var userName = HttpContextAccessor.HttpContext.User.Identity.Name;
+        if (!await AuthService.AuthorizeProject(userName, projectId))
+            NavigationManager.NavigateTo("/admin/notfound");
+
+        await ProjectService.DeleteProject(projectId);
+
+        projects = projects.Where(x => x.Id != projectId).ToList();
+    }
+
+}

@@ -1,0 +1,34 @@
+﻿@using DevResume.ServiceLayer.Services
+@using DevResume.Domain.Entities
+
+@inject IProjectService ProjectService
+@inject IJSRuntime JSRuntime;
+
+@foreach (var project in projects)
+{
+    <div class="slide" data-anchor="@($"slide{project.Id}")">
+        <ProjectPage project="@project" />
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public int ResumeId { get; set; }
+
+    private List<Project> projects = new List<Project>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        projects = await ProjectService.GetProjects(ResumeId);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeAsync<string>("start");
+        }
+    }
+
+}

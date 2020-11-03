@@ -1,0 +1,42 @@
+﻿@inject IJSRuntime JSRuntime;
+
+<ul id="menu" class="nav-menu left">
+    @if (SectionsActive[0].Item1)
+    {
+        <li data-menuanchor="main" class="active"><a @onclick="@(e => MoveTo(SectionsActive[0].Item2))" href="@($"{Key}/#main")" class="nav-menu-link">Main</a></li>
+    }
+    @if (SectionsActive[1].Item1)
+    {
+        <li data-menuanchor="info"><a @onclick="@(e => MoveTo(SectionsActive[1].Item2))" href="@($"{Key}/#info")" class="nav-menu-link">Info</a></li>
+    }
+    @if (SectionsActive[2].Item1)
+    {
+        <li data-menuanchor="projects"><a @onclick="@(e => MoveTo(SectionsActive[2].Item2))" href="@($"{Key}/#projects")" class="nav-menu-link">Projects</a></li>
+    }
+    @if (SectionsActive[3].Item1)
+    {
+        <li data-menuanchor="skills"><a @onclick="@(e => MoveTo(SectionsActive[3].Item2))" href="@($"{Key}/#skills")" class="nav-menu-link">Skills</a></li>
+    }
+    @if (SectionsActive[4].Item1)
+    {
+        <li data-menuanchor="experience"><a @onclick="@(e => MoveTo(SectionsActive[4].Item2))" href="@($"{Key}/#experience")" class="nav-menu-link">Experience</a></li>
+    }
+    @if (SectionsActive[5].Item1)
+    {
+        <li data-menuanchor="education"><a @onclick="@(e => MoveTo(SectionsActive[5].Item2))" href="@($"{Key}/#education")" class="nav-menu-link">Education</a></li>
+    }
+</ul>
+
+@code {
+
+    [Parameter]
+    public string Key { get; set; }
+    [Parameter]
+    public (bool, int)[] SectionsActive { get; set; }
+
+    public async Task MoveTo(int sectionNumber)
+    {
+        await JSRuntime.InvokeAsync<string>("moveToSection", sectionNumber);
+    }
+
+}

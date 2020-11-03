@@ -1,0 +1,64 @@
+﻿@layout AdminLayout
+@page "/admin"
+@using Microsoft.AspNetCore.Http
+@using DevResume.ServiceLayer.Services
+@using DevResume.Domain.Entities
+
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IResumeService ResumeService
+
+<AdminRightMenu />
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="resume_card">
+                <p class="resume_card-key">
+
+                </p>
+                <p class="resume_card-title">
+
+                </p>
+                <p class="resume_card-subtitle">
+
+                </p>
+                <NavLink href="/admin/resumes/new" class="resume_card-action">
+                    New
+                </NavLink>
+            </div>
+        </div>
+    </div>
+    @foreach (var resume in resumes)
+    {
+        <div class="col-md-3">
+            <div class="card">
+                <div class="resume_card">
+                    <p class="resume_card-key">
+                        @resume.Key
+                    </p>
+                    <p class="resume_card-title">
+                        @resume.Title
+                    </p>
+                    <p class="resume_card-subtitle">
+                        @resume.Subtitle
+                    </p>
+                    <NavLink href="@($"/admin/resumes/{resume.Id}")" class="resume_card-action">
+                        Open
+                    </NavLink>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+
+    private List<Resume> resumes = new List<Resume>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userName = HttpContextAccessor.HttpContext.User.Identity.Name;
+        resumes = await ResumeService.GetResumesAsync(userName);
+    }
+
+}

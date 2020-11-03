@@ -1,0 +1,212 @@
+﻿@layout AdminLayout
+@page "/admin/resumes/{ResumeId:int}/projects/{Id:int}"
+@using Microsoft.AspNetCore.Http
+@using DevResume.ServiceLayer.Services
+@using DevResume.ServiceLayer.Services.Interfaces
+@using DevResume.Domain.Entities
+@using DevResume.Domain.Models
+
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IProjectService ProjectService
+@inject IFileService FileService
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+<AdminResumeMenu ResumeId="@ResumeId" />
+
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            @if (Id == 0)
+            {
+                <h1 class="card-title">
+                    New project
+                </h1>
+            }
+            else
+            {
+                <h1 class="card-title">
+                    @project.Title
+                </h1>
+            }
+            <div class="card-actions">
+                <button type="submit" form="projectForm" class="btn btn-primary">
+                    Save
+                </button>
+                <NavLink href="@($"/admin/resumes/{ResumeId}/projects")" class="btn btn-secondary">
+                    Back
+                </NavLink>
+            </div>
+            <div class="card-content">
+                <EditForm id="projectForm" Model="@project" OnValidSubmit="HandleSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="form-group">
+                        <label>
+                            Title:
+                        </label>
+                        <InputText id="title" @bind-Value="project.Title" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Subtitle:
+                        </label>
+                        <InputText id="subtitle" @bind-Value="project.Subtitle" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Description:
+                        </label>
+                        <InputTextArea id="description" @bind-Value="project.Description" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Year:
+                        </label>
+                        <InputNumber id="year" @bind-Value="project.Year" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Website:
+                        </label>
+                        <InputText id="website" @bind-Value="project.Website" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            AppStore:
+                        </label>
+                        <InputText id="appStore" @bind-Value="project.AppStore" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            PlayStore:
+                        </label>
+                        <InputText id="playStore" @bind-Value="project.PlayStore" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Source:
+                        </label>
+                        <InputText id="source" @bind-Value="project.Source" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Technologies:
+                        </label>
+                        <InputText id="technologies" @bind-Value="project.Technologies" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Languages:
+                        </label>
+                        <InputText id="languages" @bind-Value="project.Languages" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Is web app:
+                        </label>
+                        <InputCheckbox id="isWebApp" @bind-Value="project.IsWebApp" class="form-control form-checkbox" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Is mobile app:
+                        </label>
+                        <InputCheckbox id="isMobileApp" @bind-Value="project.IsMobileApp" class="form-control form-checkbox" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Is desktop app:
+                        </label>
+                        <InputCheckbox id="isDesktopApp" @bind-Value="project.IsDesktopApp" class="form-control form-checkbox" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Is library:
+                        </label>
+                        <InputCheckbox id="isLibrary" @bind-Value="project.IsLibrary" class="form-control form-checkbox" />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="drag-drop-zone">
+                                <InputFile OnChange="HandleFileSelected" />
+                                Upload cover here
+                            </div>
+                        </div>
+                        <div class="col-md-3 offset-md-3">
+                            @if (project?.Cover?.Length > 0)
+                            {
+                                <div class="form_image-wrapper">
+                                    <a @onclick="@(e => RemoveCover())" class="form_image-btn">
+                                        Remove
+                                    </a>
+                                    <img src="@($"uploads/{project.Cover}")" alt="logo" class="form_image project_form_image" />
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public int ResumeId { get; set; }
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private Project project = new Project();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var userName = HttpContextAccessor.HttpContext.User.Identity.Name;
+        if (!await AuthService.AuthorizeResume(userName, ResumeId))
+            NavigationManager.NavigateTo("/admin/notfound");
+
+        project = Id == 0 ? new Project() : await ProjectService.GetProject(Id);
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (Id == 0)
+        {
+            var userName = HttpContextAccessor.HttpContext.User.Identity.Name;
+            if (!await AuthService.AuthorizeResume(userName, ResumeId))
+                NavigationManager.NavigateTo("/admin/notfound");
+
+            await ProjectService.AddProject(project, ResumeId);
+        }
+        else
+        {
+            var userName = HttpContextAccessor.HttpContext.User.Identity.Name;
+            if (!await AuthService.AuthorizeProject(userName, project.Id))
+                NavigationManager.NavigateTo("/admin/notfound");
+
+            await ProjectService.UpdateProject(project);
+        }
+
+        NavigationManager.NavigateTo($"/admin/resumes/{ResumeId}/projects");
+    }
+
+    async void HandleFileSelected(IFileListEntry[] files)
+    {
+        var filesPaths = await FileService.UploadFiles(files.Select(x => new FileDataModel
+        {
+            Name = x.Name,
+            Data = x.Data
+        }).ToList());
+
+        project.Cover = filesPaths.FirstOrDefault();
+        this.StateHasChanged();
+    }
+
+    void RemoveCover()
+    {
+        project.Cover = null;
+    }
+
+}

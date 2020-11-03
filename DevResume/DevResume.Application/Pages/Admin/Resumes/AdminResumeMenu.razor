@@ -1,0 +1,48 @@
+﻿@namespace DevResume.Application.Pages.Admin
+
+<ul class="nav-menu left">
+    <li class="active">
+        <NavLink href="@($"/admin/resumes/{ResumeId}")" class="nav-menu-link">
+            Home
+        </NavLink>
+    </li>
+    <li class="active">
+        <NavLink href="@($"/admin/resumes/{ResumeId}/info")" class="nav-menu-link">
+            Main info
+        </NavLink>
+    </li>
+    <li class="active">
+        <NavLink href="@($"/admin/resumes/{ResumeId}/projects")" class="nav-menu-link">
+            Projects
+        </NavLink>
+    </li>
+    <li class="active">
+        <NavLink href="@($"/admin/resumes/{ResumeId}/skills")" class="nav-menu-link">
+            Skills
+        </NavLink>
+    </li>
+    <li class="active">
+        <NavLink href="@($"/admin/resumes/{ResumeId}/edu")" class="nav-menu-link">
+            Education
+        </NavLink>
+    </li>
+    <li class="active">
+        <NavLink href="@($"/admin/resumes/{ResumeId}/experience")" class="nav-menu-link">
+            Experience
+        </NavLink>
+    </li>
+    <li class="active">
+        <NavLink href="@($"/admin/resumes/{ResumeId}/sections")" class="nav-menu-link">
+            Sections
+        </NavLink>
+    </li>
+</ul>
+
+<AdminRightMenu />
+
+@code {
+
+    [Parameter]
+    public int ResumeId { get; set; }
+
+}

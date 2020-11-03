@@ -1,0 +1,49 @@
+﻿@using Microsoft.AspNetCore.Hosting
+@using Microsoft.AspNetCore.Mvc.ViewEngines
+
+@inject IWebHostEnvironment Environment
+@inject ICompositeViewEngine Engine
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] | DevResume</title>
+    <base href="~/" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+          crossorigin="anonymous">
+    <link href="css/site.css" rel="stylesheet" />
+</head>
+<body>
+    <div class="main">
+        <ul class="nav-menu left">
+            <li class="active">
+                <a href="/" class="nav-menu-link">
+                    Home
+                </a>
+            </li>
+            <li class="active">
+                <a class="nav-menu-link">
+                    About
+                </a>
+            </li>
+        </ul>
+        <div class="container-fluid">
+            <div class="page_content">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+    @*<footer class="footer border-top text-muted">
+            <div class="container">
+                &copy; 2020 - DevResume.Application - <a asp-area="" asp-page="Privacy">Privacy</a>
+            </div>
+        </footer>*@
+    @*<script src="~/Identity/lib/jquery/dist/jquery.min.js"></script>
+        <script src="~/Identity/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="~/Identity/js/site.js" asp-append-version="true"></script>*@
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

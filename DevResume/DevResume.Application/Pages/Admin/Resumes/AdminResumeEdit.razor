@@ -1,0 +1,202 @@
+﻿@layout AdminLayout
+@page "/admin/resumes/{Id:int}/info"
+@using Microsoft.AspNetCore.Http
+@using DevResume.ServiceLayer.Services
+@using DevResume.ServiceLayer.Services.Interfaces
+@using DevResume.Domain.Entities
+
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IResumeService ResumeService
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
+<AdminResumeMenu ResumeId="@resume.Id" />
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            @if (Id == 0)
+            {
+                <h1 class="card-title">
+                    New resume
+                </h1>
+            }
+            else
+            {
+                <h1 class="card-title">
+                    @resume.Title
+                </h1>
+            }
+            <div class="card-actions">
+                <button type="submit" form="resumeForm" class="btn btn-primary">
+                    Save
+                </button>
+                <NavLink href="@($"/admin/resumes/{Id}")" class="btn btn-secondary">
+                    Back
+                </NavLink>
+            </div>
+            <div class="card-content">
+                <EditForm id="resumeForm" Model="@resume" OnValidSubmit="HandleSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>
+                                    ID:
+                                </label>
+                                <InputText id="key" @bind-Value="resume.Key" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    FirstName:
+                                </label>
+                                <InputText id="firstName" @bind-Value="resume.FirstName" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    LastName:
+                                </label>
+                                <InputText id="lastName" @bind-Value="resume.LastName" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    Birthday:
+                                </label>
+                                <InputDate id="birthday" @bind-Value="resume.Birthday" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    About:
+                                </label>
+                                <InputTextArea id="about" @bind-Value="resume.About" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    Languages (native and foreign):
+                                </label>
+                                <InputText id="languages" @bind-Value="resume.Languages" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    Title (1st line in main section):
+                                </label>
+                                <InputText id="title" @bind-Value="resume.Title" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    Subtitle (2nd line in main section):
+                                </label>
+                                <InputText id="subtitle" @bind-Value="resume.Subtitle" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    Country:
+                                </label>
+                                <InputText id="subtitle" @bind-Value="resume.Country" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    City:
+                                </label>
+                                <InputText id="subtitle" @bind-Value="resume.City" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>
+                                    Email:
+                                </label>
+                                <InputText id="subtitle" @bind-Value="resume.Email" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    Phone:
+                                </label>
+                                <InputText id="subtitle" @bind-Value="resume.Phone" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    Communication method:
+                                </label>
+                                <InputSelect @bind-Value="resume.CommunicationMethod" class="form-control">
+                                    <option value="@CommunicationMethod.Phone">
+                                        Phone
+                                    </option>
+                                    <option value="@CommunicationMethod.Email">
+                                        Email
+                                    </option>
+                                    <option value="@CommunicationMethod.Messengers">
+                                        Messengers
+                                    </option>
+                                </InputSelect>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    VK:
+                                </label>
+                                <InputText id="subtitle" @bind-Value="resume.VK" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    Facebook:
+                                </label>
+                                <InputText id="subtitle" @bind-Value="resume.Facebook" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    Twitter:
+                                </label>
+                                <InputText id="subtitle" @bind-Value="resume.Twitter" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    Instagram:
+                                </label>
+                                <InputText id="subtitle" @bind-Value="resume.Instagram" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    Github:
+                                </label>
+                                <InputText id="subtitle" @bind-Value="resume.Github" class="form-control" />
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    Gitlab:
+                                </label>
+                                <InputText id="subtitle" @bind-Value="resume.Gitlab" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private Resume resume = new Resume();
+
+    protected override async Task OnInitializedAsync()
+    {
+        resume = Id == 0 ? new Resume() : await ResumeService.GetResume(Id);
+    }
+
+    private async Task HandleSubmit()
+    {
+        var userName = HttpContextAccessor.HttpContext.User.Identity.Name;
+        if (Id != 0 && !await AuthService.AuthorizeResume(userName, resume.Id))
+            NavigationManager.NavigateTo("/admin/notfound");
+
+        await ResumeService.UpdateResume(resume);
+
+        NavigationManager.NavigateTo($"/admin/resumes/{Id}");
+    }
+
+}
